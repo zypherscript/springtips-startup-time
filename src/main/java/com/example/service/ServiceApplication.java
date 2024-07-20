@@ -6,12 +6,14 @@ import static com.example.service.ServiceApplication.STOP;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.SmartLifecycle;
 import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
@@ -86,4 +88,29 @@ interface CustomerRepository extends ListCrudRepository<Customer, Integer> {
 
 record Customer(@Id Integer id, String name) {
 
+}
+
+@Component
+class CracComponent implements SmartLifecycle {
+
+  private final AtomicBoolean running = new AtomicBoolean(false);
+
+  @Override
+  public void start() {
+    if (this.running.compareAndSet(false, true)) {
+      System.out.println("CRAC component started");
+    }
+  }
+
+  @Override
+  public void stop() {
+    if (this.running.compareAndSet(true, false)) {
+      System.out.println("CRAC component stopped");
+    }
+  }
+
+  @Override
+  public boolean isRunning() {
+    return this.running.get();
+  }
 }
